@@ -13,11 +13,7 @@ import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.util.InstantiationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.retry.RetryPolicy;
 import software.amazon.awssdk.http.crt.AwsCrtAsyncHttpClient;
@@ -30,6 +26,7 @@ import software.amazon.awssdk.services.timestreamwrite.model.WriteRecordsRequest
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +36,7 @@ import java.util.function.Consumer;
 
 import static com.amazonaws.samples.connectors.timestream.TimestreamSink.MAX_BATCH_SIZE_IN_BYTES;
 import static com.amazonaws.samples.connectors.timestream.TimestreamSink.MAX_RECORD_SIZE_IN_BYTES;
+import static software.amazon.awssdk.auth.credentials.StaticCredentialsProvider.*;
 
 public class TimestreamSinkWriter<InputT> extends AsyncSinkWriter<InputT, Record> {
     private static final Logger LOG = LoggerFactory.getLogger(TimestreamSinkWriter.class);
@@ -135,6 +133,8 @@ public class TimestreamSinkWriter<InputT> extends AsyncSinkWriter<InputT, Record
                                 ProfileFile.builder().content(Path.of(profileConfigPath)).build()).build();
             case AUTO:
                 return DefaultCredentialsProvider.create();
+            case BASIC:
+                return StaticCredentialsProvider.create(AwsBasicCredentials.create(credentialConfig.getAccessKeyId(),  credentialConfig.getSecretAccessKey()));
             default:
                 throw new IllegalArgumentException("Credential provider not supported: " + credentialType);
         }

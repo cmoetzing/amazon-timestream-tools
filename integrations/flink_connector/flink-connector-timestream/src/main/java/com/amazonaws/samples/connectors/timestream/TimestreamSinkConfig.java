@@ -94,6 +94,18 @@ public class TimestreamSinkConfig implements Serializable {
          */
         @Builder.Default
         private final String profileConfigPath = null;
+
+        /**
+         * Option field for credProvider == "BASIC"
+         */
+        @Builder.Default
+        private final String accessKeyId = null;
+
+        /**
+         * Option field for credProvider == "BASIC"
+         */
+        @Builder.Default
+        private final String secretAccessKey = null;
     }
 
 
@@ -115,6 +127,7 @@ public class TimestreamSinkConfig implements Serializable {
         AUTO,
         ENV_VAR,
         SYS_PROP,
-        PROFILE
+        PROFILE,
+        BASIC
     }
 }
