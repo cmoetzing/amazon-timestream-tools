@@ -6,11 +6,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import imported.vnext.org.apache.flink.connector.base.sink.sink.writer.SinkMetricGroup;
+import org.apache.flink.api.common.operators.MailboxExecutor;
 import org.apache.flink.api.connector.sink.Sink;
 import org.apache.flink.metrics.MetricGroup;
 import org.apache.flink.metrics.SimpleCounter;
+import org.apache.flink.metrics.groups.SinkWriterMetricGroup;
 import org.apache.flink.streaming.runtime.tasks.TestProcessingTimeService;
+import org.apache.flink.util.UserCodeClassLoader;
 import org.mockito.stubbing.Answer;
+
+import java.util.OptionalLong;
 
 
 public class SinkInitContext implements Sink.InitContext {
@@ -21,6 +26,16 @@ public class SinkInitContext implements Sink.InitContext {
     }
 
     private SinkMetricGroup sinkMetricGroup;
+
+    @Override
+    public UserCodeClassLoader getUserCodeClassLoader() {
+        return null;
+    }
+
+    @Override
+    public MailboxExecutor getMailboxExecutor() {
+        return null;
+    }
 
     @Override
     public Sink.ProcessingTimeService getProcessingTimeService() {
@@ -44,18 +59,29 @@ public class SinkInitContext implements Sink.InitContext {
         return 0;
     }
 
+    @Override
+    public int getNumberOfParallelSubtasks() {
+        return 0;
+    }
+
     /**
      * @return The metric group this writer belongs to.
      */
     @Override
-    public MetricGroup metricGroup() {
-        MetricGroup sinkMetricGroup = mock(MetricGroup.class);
+    public SinkWriterMetricGroup metricGroup() {
+        SinkWriterMetricGroup sinkMetricGroup = mock(SinkWriterMetricGroup.class);
         when(sinkMetricGroup.counter(anyString()))
                 .thenAnswer(((Answer<SimpleCounter>) invocation -> new SimpleCounter()));
 
-        MetricGroup mg = mock(MetricGroup.class, RETURNS_DEEP_STUBS);
+        SinkWriterMetricGroup mg = mock(SinkWriterMetricGroup.class, RETURNS_DEEP_STUBS);
         when(mg.addGroup(anyString())).thenReturn(sinkMetricGroup);
+
         return mg;
+    }
+
+    @Override
+    public OptionalLong getRestoredCheckpointId() {
+        return null;
     }
 
     public TestProcessingTimeService getTestProcessingTimeService() {
